@@ -1,12 +1,27 @@
-//! Default Compute@Edge template program.
+use std::path::Path;
 
 use fastly::http::{header, Method, StatusCode};
-use fastly::{mime, Error, Request, Response};
+use fastly::{mime, Request, Response, Error};
 use rust_embed::RustEmbed;
+use std::ffi::OsStr;
 
 #[derive(RustEmbed)]
 #[folder = "static/"]
 struct Asset;
+
+fn file_mimetype(filename: &str, default: mime::Mime) -> mime::Mime {
+    let extension = Path::new(filename).extension().and_then(OsStr::to_str);
+    match extension {
+        Some(ext) => match ext {
+            "css" => mime::TEXT_CSS_UTF_8,
+            "gif" => mime::IMAGE_GIF,
+            "html" | "htm" => mime::TEXT_HTML_UTF_8,
+            "jpeg" | "jpg" => mime::IMAGE_JPEG,
+            _ => default,
+        }
+        None => default,
+    }
+}
 
 #[fastly::main]
 fn main(mut req: Request) -> Result<Response, Error> {
@@ -23,9 +38,12 @@ fn main(mut req: Request) -> Result<Response, Error> {
         }
     };
 
-    match Asset::get(req.get_path().trim_start_matches("/")) {
+    const DEFAULT_MIMETYPE:mime::Mime = mime::APPLICATION_OCTET_STREAM;
+    let filename = req.get_path().trim_start_matches("/");
+
+    match Asset::get(filename) {
         Some(asset) => Ok(Response::from_status(StatusCode::OK)
-                .with_content_type(mime::TEXT_HTML_UTF_8)
+                .with_content_type(file_mimetype(filename, DEFAULT_MIMETYPE))
                 .with_body(std::str::from_utf8(asset.data.as_ref()).unwrap())),
 
         None => Ok(Response::from_status(StatusCode::NOT_FOUND)
