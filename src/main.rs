@@ -29,7 +29,7 @@ fn file_mimetype(filename: &str, default: mime::Mime) -> mime::Mime {
 }
 
 #[fastly::main]
-fn main(mut req: Request) -> Result<Response, Error> {
+fn main(req: Request) -> Result<Response, Error> {
     // Filter request methods...
     match req.get_method() {
         // Allow GET and HEAD requests.
