@@ -17,6 +17,7 @@ fn file_mimetype(filename: &str, default: mime::Mime) -> mime::Mime {
             "gif" => mime::IMAGE_GIF,
             "html" | "htm" => mime::TEXT_HTML_UTF_8,
             "jpeg" | "jpg" => mime::IMAGE_JPEG,
+            "svg" => mime::IMAGE_SVG,
             _ => default,
         }
         None => default,
@@ -39,14 +40,17 @@ fn main(mut req: Request) -> Result<Response, Error> {
     };
 
     const DEFAULT_MIMETYPE:mime::Mime = mime::APPLICATION_OCTET_STREAM;
-    let filename = req.get_path().trim_start_matches("/");
+    let mut filename = req.get_path().trim_start_matches("/");
+    if filename == "" {
+        filename = "index.html";
+    }
 
     match Asset::get(filename) {
         Some(asset) => Ok(Response::from_status(StatusCode::OK)
-                .with_content_type(file_mimetype(filename, DEFAULT_MIMETYPE))
-                .with_body(std::str::from_utf8(asset.data.as_ref()).unwrap())),
+            .with_body_bytes(asset.data.as_ref())
+            .with_content_type(file_mimetype(filename, DEFAULT_MIMETYPE))),
 
         None => Ok(Response::from_status(StatusCode::NOT_FOUND)
-                       .with_body_text_plain(&*format!("404 error, {} not found!", req.get_path())))
+            .with_body_text_plain(&*format!("404 error, {} not found!", req.get_path())))
     }
 }
