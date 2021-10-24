@@ -17,6 +17,7 @@ fn file_mimetype(filename: &str, default: mime::Mime) -> mime::Mime {
             "gif" => mime::IMAGE_GIF,
             "html" | "htm" => mime::TEXT_HTML_UTF_8,
             "jpeg" | "jpg" => mime::IMAGE_JPEG,
+            "js" => mime::TEXT_JAVASCRIPT,
             "svg" => mime::IMAGE_SVG,
             _ => default,
         }
