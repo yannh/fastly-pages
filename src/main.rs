@@ -23,14 +23,12 @@ fn main(mut req: Request) -> Result<Response, Error> {
         }
     };
 
-    let p = req.get_path();
-    let asset_res = Asset::get(&p[1..p.len()]); // Remove leading /
-    match asset_res {
+    match Asset::get(req.get_path().trim_start_matches("/")) {
         Some(asset) => Ok(Response::from_status(StatusCode::OK)
                 .with_content_type(mime::TEXT_HTML_UTF_8)
                 .with_body(std::str::from_utf8(asset.data.as_ref()).unwrap())),
 
         None => Ok(Response::from_status(StatusCode::NOT_FOUND)
-                       .with_body_text_plain(&*format!("404 error, {} not foun!", req.get_path())))
+                       .with_body_text_plain(&*format!("404 error, {} not found!", req.get_path())))
     }
 }
