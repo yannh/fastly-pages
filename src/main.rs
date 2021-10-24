@@ -10,9 +10,9 @@ use std::ffi::OsStr;
 struct Asset;
 
 fn file_mimetype(filename: &str, default: mime::Mime) -> mime::Mime {
-    let extension = Path::new(filename).extension().and_then(OsStr::to_str);
+    let extension = Path::new(filename).extension().and_then(OsStr::to_str).map(|s| s.to_lowercase());
     match extension {
-        Some(ext) => match ext {
+        Some(ext) => match ext.as_str() {
             "css" => mime::TEXT_CSS_UTF_8,
             "gif" => mime::IMAGE_GIF,
             "html" | "htm" => mime::TEXT_HTML_UTF_8,
