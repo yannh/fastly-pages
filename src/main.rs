@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use fastly::http::{header, Method, StatusCode};
-use fastly::{mime, Request, Response, Error};
+use fastly::{mime, Error, Request, Response};
 use rust_embed::RustEmbed;
 use std::ffi::OsStr;
 
@@ -10,7 +10,10 @@ use std::ffi::OsStr;
 struct Asset;
 
 fn file_mimetype(filename: &str, default: mime::Mime) -> mime::Mime {
-    let extension = Path::new(filename).extension().and_then(OsStr::to_str).map(|s| s.to_lowercase());
+    let extension = Path::new(filename)
+        .extension()
+        .and_then(OsStr::to_str)
+        .map(|s| s.to_lowercase());
     match extension {
         Some(ext) => match ext.as_str() {
             "css" => mime::TEXT_CSS_UTF_8,
@@ -20,8 +23,8 @@ fn file_mimetype(filename: &str, default: mime::Mime) -> mime::Mime {
             "js" => mime::TEXT_JAVASCRIPT,
             "svg" => mime::IMAGE_SVG,
             _ => default,
-        }
-        None => default,
+        },
+        _ => default,
     }
 }
 
@@ -40,7 +43,7 @@ fn main(mut req: Request) -> Result<Response, Error> {
         }
     };
 
-    const DEFAULT_MIMETYPE:mime::Mime = mime::APPLICATION_OCTET_STREAM;
+    const DEFAULT_MIMETYPE: mime::Mime = mime::APPLICATION_OCTET_STREAM;
     let mut filename = req.get_path().trim_start_matches("/");
     if filename == "" {
         filename = "index.html";
@@ -52,6 +55,6 @@ fn main(mut req: Request) -> Result<Response, Error> {
             .with_content_type(file_mimetype(filename, DEFAULT_MIMETYPE))),
 
         None => Ok(Response::from_status(StatusCode::NOT_FOUND)
-            .with_body_text_plain(&*format!("404 error, {} not found!", req.get_path())))
+            .with_body_text_plain(&*format!("404 error, {} not found!", req.get_path()))),
     }
 }
