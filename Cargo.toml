@@ -12,4 +12,4 @@ debug = 1
 
 [dependencies]
 fastly = "^0.8.0"
-rust-embed="6.2.0"
+rust-embed="6.3.0"
